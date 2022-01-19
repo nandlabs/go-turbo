@@ -14,7 +14,7 @@ import (
 	"go.nandlabs.io/commons/textutils"
 )
 
-// Router router struct that holds the router configuration
+//Router struct that holds the router configuration
 type Router struct {
 	lock sync.RWMutex
 	//Handler for any route that is not defined
@@ -25,13 +25,13 @@ type Router struct {
 	topLevelRoutes map[string]*Route
 }
 
-//Parameter to hold key value
+//Param to hold key value
 type Param struct {
 	key   string
 	value string
 }
 
-//Route : TODO Documentation
+//Route base struct to hold the route information
 type Route struct {
 	//name of the route fragment if this is a path variable the name of the variable will be used here.
 	path      string
@@ -65,7 +65,7 @@ type QueryParam struct {
 	// TODO add mechanism for creating a typed query parameter to do auto type conversion in the framework.
 }
 
-// NewRouter : registers the new instance of the Turbo Framework
+//NewRouter registers the new instance of the Turbo Framework
 func NewRouter() *Router {
 	logger.InfoF("Initiating Turbo")
 	return &Router{
@@ -76,27 +76,27 @@ func NewRouter() *Router {
 	}
 }
 
-//Get route : Add a turbo handler for GET method
+//Get to Add a turbo handler for GET method
 func (router *Router) Get(path string, f func(w http.ResponseWriter, r *http.Request)) *Route {
 	return router.Add(path, f, GET)
 }
 
-//Post route : Add a turbo handler for POST method
+//Post to Add a turbo handler for POST method
 func (router *Router) Post(path string, f func(w http.ResponseWriter, r *http.Request)) *Route {
 	return router.Add(path, f, POST)
 }
 
-//Put route : Add a turbo handler for PUT method
+//Put to Add a turbo handler for PUT method
 func (router *Router) Put(path string, f func(w http.ResponseWriter, r *http.Request)) *Route {
 	return router.Add(path, f, PUT)
 }
 
-//Delete route : Add a turbo handler for DELETE method
+//Delete to Add a turbo handler for DELETE method
 func (router *Router) Delete(path string, f func(w http.ResponseWriter, r *http.Request)) *Route {
 	return router.Add(path, f, DELETE)
 }
 
-//Add route : Add a turbo handler for one or more HTTP methods.
+//Add a turbo handler for one or more HTTP methods.
 func (router *Router) Add(path string, f func(w http.ResponseWriter, r *http.Request), methods ...string) *Route {
 	router.lock.Lock()
 	defer router.lock.Unlock()
@@ -187,11 +187,12 @@ func (router *Router) Add(path string, f func(w http.ResponseWriter, r *http.Req
 	return route
 }
 
-//Any default features like logging, auth etc will be injected here
+//prepareHandler to add any default features like logging, auth... will be injected here
 func prepareHandler(method string, handler http.Handler) http.Handler {
 	return handler
 }
 
+//addQueryVar to add query params to the route
 func (route *Route) addQueryVar(name string, required bool) *Route {
 	//TODO add name validation.
 	queryParams := &QueryParam{
@@ -203,12 +204,12 @@ func (route *Route) addQueryVar(name string, required bool) *Route {
 	return route
 }
 
-// ServeHTTP :
+// ServeHTTP
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	var handler http.Handler
 	// perform the path checks before, set the 301 status even before further computation
-	// these checks need not to be performed once the PreWork is refined and up to the mark
+	// these checks need not be performed once the PreWork is refined and up to the mark
 	if p := refinePath(path); p != path {
 		url := *r.URL
 		url.Path = p
@@ -232,7 +233,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		// check for authenticated filter explicitly at the top
-		// we add all the filters added by the user in it's order and if the user has added a Authenticator Filter then it will always be executed first
+		// we add all the filters added by the user in its order and if the user has added an Authenticator Filter then it will always be executed first
 		if match.authFilter != nil {
 			handler = match.authFilter.Apply(handler)
 		}
@@ -248,7 +249,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler.ServeHTTP(w, r)
 }
 
-// findRoute : The function checks for the incoming request path whether it matches with any registered route's path
+// findRoute performs the function checks for the incoming request path whether it matches with any registered route's path
 func (router *Router) findRoute(req *http.Request) (*Route, []Param) {
 	var route *Route
 	var params []Param = nil
@@ -291,6 +292,7 @@ func (router *Router) findRoute(req *http.Request) (*Route, []Param) {
 	return route, params
 }
 
+//GetPathParams fetches the path parameters
 func (router *Router) GetPathParams(id string, r *http.Request) (string, error) {
 	params, ok := r.Context().Value("params").([]Param)
 	if !ok {
@@ -305,6 +307,7 @@ func (router *Router) GetPathParams(id string, r *http.Request) (string, error) 
 	return "", errors.New(fmt.Sprintf("No Such parameter %s", id))
 }
 
+//GetIntPathParams fetches the int path parameters
 func (router *Router) GetIntPathParams(id string, r *http.Request) (int, error) {
 	val, err := router.GetPathParams(id, r)
 	if err != nil {
@@ -317,6 +320,7 @@ func (router *Router) GetIntPathParams(id string, r *http.Request) (int, error) 
 	return valInt, nil
 }
 
+//GetFloatPathParams fetches the float path parameters
 func (router *Router) GetFloatPathParams(id string, r *http.Request) (float64, error) {
 	val, err := router.GetPathParams(id, r)
 	if err != nil {
@@ -329,6 +333,7 @@ func (router *Router) GetFloatPathParams(id string, r *http.Request) (float64, e
 	return valFloat, nil
 }
 
+//GetBoolPathParams fetches the bool path parameters
 func (router *Router) GetBoolPathParams(id string, r *http.Request) (bool, error) {
 	val, err := router.GetPathParams(id, r)
 	if err != nil {
@@ -341,6 +346,7 @@ func (router *Router) GetBoolPathParams(id string, r *http.Request) (bool, error
 	return valBool, nil
 }
 
+//GetQueryParams fetches the query parameters
 func (router *Router) GetQueryParams(id string, r *http.Request) (string, error) {
 	val := r.URL.Query().Get(id)
 	if val == "" {
@@ -350,6 +356,7 @@ func (router *Router) GetQueryParams(id string, r *http.Request) (string, error)
 	return val, nil
 }
 
+//GetIntQueryParams fetches the int query parameters
 func (router *Router) GetIntQueryParams(id string, r *http.Request) (int, error) {
 	val, ok := strconv.Atoi(r.URL.Query().Get(id))
 	if ok != nil {
@@ -359,6 +366,7 @@ func (router *Router) GetIntQueryParams(id string, r *http.Request) (int, error)
 	return val, nil
 }
 
+//GetFloatQueryParams fetches the float query parameters
 func (router *Router) GetFloatQueryParams(id string, r *http.Request) (float64, error) {
 	val, ok := strconv.ParseFloat(r.URL.Query().Get(id), 64)
 	if ok != nil {
@@ -368,6 +376,7 @@ func (router *Router) GetFloatQueryParams(id string, r *http.Request) (float64, 
 	return val, nil
 }
 
+//GetBoolQueryParams fetches the boolean query parameters
 func (router *Router) GetBoolQueryParams(id string, r *http.Request) (bool, error) {
 	val, ok := strconv.ParseBool(r.URL.Query().Get(id))
 	if ok != nil {
