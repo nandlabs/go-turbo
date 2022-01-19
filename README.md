@@ -22,7 +22,7 @@ with all the necessary Use Cases and at the same time scales well.
 ### Installation
 
 ```bash
-go get go.appmanch.org/commons/turbo
+go get go.nandlabs.io/turbo
 ```
 
 ### Benchmarking Results
