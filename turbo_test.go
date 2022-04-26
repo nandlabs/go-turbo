@@ -776,7 +776,7 @@ func TestRouter_Get(t *testing.T) {
 			args: args{
 				path: "/api/v1/health",
 				f: func(w http.ResponseWriter, r *http.Request) {
-					json.NewEncoder(w).Encode([]byte("hello from turbo"))
+					_ = json.NewEncoder(w).Encode([]byte("hello from turbo"))
 				},
 			},
 			want: &Route{},
@@ -791,7 +791,7 @@ func TestRouter_Get(t *testing.T) {
 			args: args{
 				path: "/api/v1/health/:id",
 				f: func(w http.ResponseWriter, r *http.Request) {
-					json.NewEncoder(w).Encode([]byte("hello from turbo"))
+					_ = json.NewEncoder(w).Encode([]byte("hello from turbo"))
 				},
 			},
 			want: &Route{},
@@ -806,7 +806,7 @@ func TestRouter_Get(t *testing.T) {
 			args: args{
 				path: "/",
 				f: func(w http.ResponseWriter, r *http.Request) {
-					json.NewEncoder(w).Encode([]byte("hello from turbo"))
+					_ = json.NewEncoder(w).Encode([]byte("hello from turbo"))
 				},
 			},
 			want: &Route{},
@@ -821,7 +821,21 @@ func TestRouter_Get(t *testing.T) {
 			args: args{
 				path: "/api/v1/getCustomer/:id/getData",
 				f: func(w http.ResponseWriter, r *http.Request) {
-					json.NewEncoder(w).Encode([]byte("hello from turbo"))
+					_ = json.NewEncoder(w).Encode([]byte("hello from turbo"))
+				},
+			},
+			want: &Route{},
+		}, {
+			name: "Test5",
+			fields: fields{
+				unManagedRouteHandler:    nil,
+				unsupportedMethodHandler: nil,
+				topLevelRoutes:           make(map[string]*Route),
+			},
+			args: args{
+				path: "/api/v1/health/{id}",
+				f: func(w http.ResponseWriter, r *http.Request) {
+					_ = json.NewEncoder(w).Encode([]byte("hello from turbo"))
 				},
 			},
 			want: &Route{},
@@ -869,7 +883,7 @@ func TestRouter_Add(t *testing.T) {
 			args: args{
 				path: "/api/v1/foo",
 				f: func(w http.ResponseWriter, r *http.Request) {
-					json.NewEncoder(w).Encode([]byte("fonzi says hello"))
+					_ = json.NewEncoder(w).Encode([]byte("fonzi says hello"))
 				},
 				methods: []string{"PUT", "POST"},
 			},
@@ -884,7 +898,7 @@ func TestRouter_Add(t *testing.T) {
 			args: args{
 				path: "/api/v1/fonzi",
 				f: func(w http.ResponseWriter, r *http.Request) {
-					json.NewEncoder(w).Encode([]byte("don't delete fonzi"))
+					_ = json.NewEncoder(w).Encode([]byte("don't delete fonzi"))
 				},
 				methods: []string{"DELETE"},
 			},
@@ -905,7 +919,7 @@ func TestRouter_Add(t *testing.T) {
 }
 
 func dummyHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Test Passes"))
+	_, _ = w.Write([]byte("Test Passes"))
 }
 
 func dummyFilter(next http.Handler) http.Handler {

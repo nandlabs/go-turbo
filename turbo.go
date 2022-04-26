@@ -110,6 +110,20 @@ func (router *Router) Add(path string, f func(w http.ResponseWriter, r *http.Req
 	logger.InfoF("Registering New Route: %s", path)
 	//TODO add path check for any query variables specified.
 	pathValue := strings.TrimSpace(path)
+
+	//Adds support to path with variables in {} format instead of : prefix
+	var sb strings.Builder
+	for _, c := range pathValue {
+		if c == textutils.OpenBraceChar {
+			sb.WriteRune(textutils.ColonChar)
+		} else if c == textutils.CloseBraceChar {
+			logger.Debug("Ignoring char ", textutils.CloseBraceStr)
+		} else {
+			sb.WriteRune(c)
+		}
+	}
+	pathValue = sb.String()
+
 	pathValues := strings.Split(pathValue, PathSeparator)[1:]
 	length := len(pathValues)
 	if length > 0 && pathValues[0] != textutils.EmptyStr {
