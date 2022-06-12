@@ -16,6 +16,7 @@ with all the necessary Use Cases and at the same time scales well.
     - [Path Params Wrapper](#path-params-wrapper)
     - [Query Params Wrapper](#query-params-wrapper)
     - [Filters](#filters)
+    - [Authentication](#authentication)
 
 ---
 
@@ -195,7 +196,7 @@ func main() {
       turbo is working on supporting all the major `Authentication` schemes in accordance with the OAS3 Specifications;
 
       | Authorization  | Status |
-             | :---           | :----: |
+      | :---           | :----: |
       | Basic Auth     | WIP    |
       | JWT            | TBD    |
       | OAuth          | TBD    |
@@ -204,9 +205,16 @@ func main() {
       An Authentication Filter can be implemented like below
 
       ```go
+      func basicAuthFilter(username, password string) (bool, error) {
+        if username == "username" && password == "password" {
+           return true, nil
+        }
+        return false, nil
+      }
+      
       func main() {
         turboRouter := turbo.NewRouter()
-        var authenticator = auth.CreateBasicAuthAuthenticator()
+        var authenticator = auth.CreateBasicAuthAuthenticator(basicAuthFilter)
         // provide the configuration to your authenticator filter struct, 
         // with the relevant struct Objects that would be exposed 
         // Once those input to your `authenticator` is fed, it can be used as the Filter easily
@@ -234,4 +242,7 @@ func main() {
   Turbo gives the Authentication Filter precedence over any of the filter added to the chain. Rest all the chain order
   gets preserved in order they are added.
    
+#### Authentication
 
+##### Supported Authentication Schemes
+    1. Basic Auth

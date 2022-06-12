@@ -1,6 +1,7 @@
 package turbo
 
 import (
+	"go.nandlabs.io/turbo/auth"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,6 +14,13 @@ func filterFunction(input string) FilterFunc {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func basicAuthFilter(username, password string) (bool, error) {
+	if username == "username" && password == "password" {
+		return true, nil
+	}
+	return false, nil
 }
 
 var testHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +90,7 @@ func TestAuthenticatorFilter(t *testing.T) {
 	route := router.Get("/api/foo", testHandler)
 	path := "/api/foo"
 
-	var authenticator = CreateBasicAuthAuthenticator()
+	var authenticator = auth.CreateBasicAuthAuthenticator(basicAuthFilter)
 
 	route.AddAuthenticator(authenticator)
 
@@ -90,14 +98,15 @@ func TestAuthenticatorFilter(t *testing.T) {
 	var r *http.Request
 	var err error
 
+	// Request 1
 	w = httptest.NewRecorder()
 	r, err = http.NewRequest(GET, path, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	r.Header.Add("token", "value")
+	r.Header.Add("Authorization", "Basic dXNlcm5hbWU6cGFzc3dvcmQ=")
 
-	if route.authFilter == nil {
+	if route.authFilter.Validator == nil {
 		t.Error("Authenticator Filters not added")
 	}
 	router.ServeHTTP(w, r)
@@ -105,16 +114,30 @@ func TestAuthenticatorFilter(t *testing.T) {
 		t.Error("Auth Filter not working")
 	}
 
+	// Request 2
 	w = httptest.NewRecorder()
 	r, err = http.NewRequest(GET, path, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if route.authFilter == nil {
+	if route.authFilter.Validator == nil {
 		t.Error("Authenticator Filters not added")
 	}
 	router.ServeHTTP(w, r)
-	if w.Result().StatusCode != http.StatusForbidden {
+	if w.Result().StatusCode != http.StatusUnauthorized {
 		t.Error("Auth Filter not working")
 	}
+
+	// Request 3
+	/*w = httptest.NewRecorder()
+	r, err = http.NewRequest(GET, path, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.Header.Add("Authorization", "Basic lcm5hbWU6cGFzc3dvcmQ=")
+
+	router.ServeHTTP(w, r)
+	if w.Result().StatusCode != http.StatusInternalServerError {
+		t.Error("Invalid Base64 token")
+	}*/
 }
