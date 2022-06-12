@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/base64"
 	"fmt"
+	"go.nandlabs.io/turbo"
 	"net/http"
 	"strings"
 )
@@ -20,6 +21,11 @@ var (
 	DefaultBasicAuthFilterConfig = BasicAuthFilter{}
 )
 
+/**
+TODO
+1. add generic error handling
+*/
+
 func (ba *BasicAuthFilter) Apply(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Basic Auth Implementation
@@ -27,13 +33,13 @@ func (ba *BasicAuthFilter) Apply(next http.Handler) http.Handler {
 			panic("basic-auth filter requires a validator function")
 		}
 		// perform pre-requisite checks
-		auth := r.Header.Get(HeaderAuthorization)
-		l := len(basic)
-		if len(auth) > l+1 && strings.EqualFold(auth[:l], basic) {
+		auth := r.Header.Get(turbo.HeaderAuthorization)
+		l := len(turbo.Basic)
+		if len(auth) > l+1 && strings.EqualFold(auth[:l], turbo.Basic) {
 			basicAuth, err := base64.StdEncoding.DecodeString(auth[l+1:])
 			if err != nil {
 				fmt.Print("error decoding basic-auth token")
-				w.WriteHeader(http.StatusInternalServerError)
+				w.WriteHeader(http.StatusBadRequest)
 				//panic("unable to decode basic-auth token")
 			}
 			fmt.Sprintf("basic token: %s", basicAuth)
@@ -43,7 +49,7 @@ func (ba *BasicAuthFilter) Apply(next http.Handler) http.Handler {
 			valid, err := ba.Validator(tokenUsername, tokenPassword)
 			if err != nil {
 				fmt.Print("error validating basic-auth token")
-				w.WriteHeader(http.StatusInternalServerError)
+				w.WriteHeader(http.StatusForbidden)
 				//panic("error validating token")
 			} else if valid {
 				next.ServeHTTP(w, r)

@@ -157,7 +157,7 @@ func main() {
   `turbo` provides two main Filter Functions which can be leveraged easily and make your microservice more flexible
    ```go
    1. AddFilter(filters ...FilterFunc)
-   2. AddAuthenticator(filter FilterFunc)
+   2. AddAuthenticator(authConfig BasicAuthFilter)
    ```
     * `AddFilter()`
 

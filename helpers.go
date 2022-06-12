@@ -5,17 +5,26 @@ import (
 	"path"
 )
 
+type (
+	HttpError struct {
+		statusCode int
+		message    string
+	}
+)
+
 //Common constants used throughout
 const (
-	PathSeparator = "/"
-	GET           = "GET"
-	HEAD          = "HEAD"
-	POST          = "POST"
-	PUT           = "PUT"
-	DELETE        = "DELETE"
-	OPTIONS       = "OPTIONS"
-	TRACE         = "TRACE"
-	PATCH         = "PATCH"
+	PathSeparator       = "/"
+	GET                 = "GET"
+	HEAD                = "HEAD"
+	POST                = "POST"
+	PUT                 = "PUT"
+	DELETE              = "DELETE"
+	OPTIONS             = "OPTIONS"
+	TRACE               = "TRACE"
+	PATCH               = "PATCH"
+	Basic               = "basic"
+	HeaderAuthorization = "Authorization"
 )
 
 var Methods = map[string]string{
@@ -70,4 +79,36 @@ func methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 //methodNotAllowedHandler when a requested method is not allowed in the registered route's method list this handler is invoked
 func methodNotAllowedHandler() http.Handler {
 	return http.HandlerFunc(methodNotAllowed)
+}
+
+func (httpError *HttpError) errorMethod(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(httpError.statusCode)
+	_, err := w.Write([]byte(httpError.message))
+	if err != nil {
+		return
+	}
+}
+
+func UnAuthorizedHandler() http.Handler {
+	httpError := &HttpError{
+		statusCode: http.StatusUnauthorized,
+		message:    "Incoming request cannot be authorized \n",
+	}
+	return http.HandlerFunc(httpError.errorMethod)
+}
+
+func InvalidTokenHandler() http.Handler {
+	httpError := &HttpError{
+		statusCode: http.StatusInternalServerError,
+		message:    "Invalid Token provided for the request \n",
+	}
+	return http.HandlerFunc(httpError.errorMethod)
+}
+
+func ErrorDecodingTokenHandler() http.Handler {
+	httpError := &HttpError{
+		statusCode: http.StatusBadRequest,
+		message:    "Error decoding authorization token \n",
+	}
+	return http.HandlerFunc(httpError.errorMethod)
 }
