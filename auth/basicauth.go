@@ -76,7 +76,7 @@ func CreateBasicAuthAuthenticator(fn BasicAuthValidator) BasicAuthFilter {
 
 func (httpError *httpError) errorMethod(w http.ResponseWriter, r *http.Request) {
 	logger.ErrorF("Error occurred at endpoint: %s", r.URL.Path)
-	logger.Error("Error Message: %s", httpError.message)
+	logger.ErrorF("Error Message: %s", httpError.message)
 	w.WriteHeader(httpError.statusCode)
 	_, err := w.Write([]byte(httpError.message))
 	if err != nil {
