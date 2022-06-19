@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"go.nandlabs.io/l3"
-	"go.nandlabs.io/turbo/auth"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 
+	auth "github.com/nandlabs/turbo-auth/providers"
 	"go.nandlabs.io/commons/textutils"
 )
 
@@ -43,7 +43,7 @@ type Route struct {
 	//hasChildVar
 	hasChildVar bool
 	//isAuthenticated keeps a check whether the route is authenticated or not
-	authFilter auth.Authenticator
+	authFilter auth.BasicAuthFilter
 	//filters array to store the ...http.handler being registered for middleware in the router
 	filters []FilterFunc
 	//handlers for HTTP Methods <method>|<Handler>
@@ -141,7 +141,7 @@ func (router *Router) Add(path string, f func(w http.ResponseWriter, r *http.Req
 				isPathVar:    isPathVar,
 				childVarName: textutils.EmptyStr,
 				hasChildVar:  false,
-				authFilter:   nil,
+				authFilter:   auth.DefaultBasicAuthFilterConfig,
 				logger:       logger,
 				handlers:     make(map[string]http.Handler),
 				subRoutes:    make(map[string]*Route),
@@ -189,7 +189,7 @@ func (router *Router) Add(path string, f func(w http.ResponseWriter, r *http.Req
 			handlers:     make(map[string]http.Handler),
 			subRoutes:    make(map[string]*Route),
 			queryParams:  make(map[string]*QueryParam),
-			authFilter:   nil,
+			authFilter:   auth.DefaultBasicAuthFilterConfig,
 			logger:       logger,
 		}
 		for _, method := range methods {
@@ -248,7 +248,7 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		// check for authenticated filter explicitly at the top
 		// we add all the filters added by the user in its order and if the user has added an Authenticator Filter then it will always be executed first
-		if match.authFilter != nil {
+		if match.authFilter.Validator != nil {
 			handler = match.authFilter.Apply(handler)
 		}
 	} else {
