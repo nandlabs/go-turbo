@@ -1,10 +1,11 @@
 package turbo
 
 import (
-	"go.nandlabs.io/turbo/auth"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	auth "github.com/nandlabs/turbo-auth/providers"
 )
 
 func filterFunction(input string) FilterFunc {
@@ -129,7 +130,7 @@ func TestAuthenticatorFilter(t *testing.T) {
 	}
 
 	// Request 3
-	/*w = httptest.NewRecorder()
+	w = httptest.NewRecorder()
 	r, err = http.NewRequest(GET, path, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -139,5 +140,5 @@ func TestAuthenticatorFilter(t *testing.T) {
 	router.ServeHTTP(w, r)
 	if w.Result().StatusCode != http.StatusInternalServerError {
 		t.Error("Invalid Base64 token")
-	}*/
+	}
 }

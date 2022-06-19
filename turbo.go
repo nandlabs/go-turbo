@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"go.nandlabs.io/l3"
-	"go.nandlabs.io/turbo/auth"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 
+	auth "github.com/nandlabs/turbo-auth/providers"
 	"go.nandlabs.io/commons/textutils"
 )
 

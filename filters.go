@@ -1,8 +1,8 @@
 package turbo
 
 import (
+	auth "github.com/nandlabs/turbo-auth/providers"
 	"go.nandlabs.io/l3"
-	"go.nandlabs.io/turbo/auth"
 	"net/http"
 )
 
