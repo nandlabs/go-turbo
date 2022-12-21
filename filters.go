@@ -1,8 +1,8 @@
 package turbo
 
 import (
+	auth "github.com/nandlabs/turbo-auth/providers"
 	"go.nandlabs.io/l3"
-	"go.nandlabs.io/turbo/auth"
 	"net/http"
 )
 
@@ -21,7 +21,7 @@ func (route *Route) AddFilter(filter ...FilterFunc) *Route {
 }
 
 //AddAuthenticator Adding the authenticator filter to the route
-func (route *Route) AddAuthenticator(auth auth.Authenticator) *Route {
+func (route *Route) AddAuthenticator(auth auth.BasicAuthFilter) *Route {
 	route.authFilter = auth
 	return route
 }
